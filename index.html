@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website name</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        /* --- Global Styles & Variables --- */
+        :root {
+            --primary-color: #6a0dad; /* Purple */
+            --secondary-color: #f0f0f0; /* Light Gray */
+            --text-color: #333;
+            --bg-color: #ffffff; /* White */
+            --font-primary: 'Montserrat', sans-serif;
+            --font-secondary: 'Lora', serif;
+        }
+
+        body.dark-mode {
+            --primary-color: #9b59b6; /* Lighter Purple for Dark Mode */
+            --secondary-color: #3c3c3c;
+            --text-color: #f0f0f0;
+            --bg-color: #1e1e1e;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- Welcome Popup Styles --- */
+        .popup-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s, visibility 0.4s;
+        }
+
+        .popup-container.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background-color: var(--bg-color);
+            padding: 30px 40px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.4s;
+        }
+
+        .popup-container.show .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-content h2 {
+            font-family: var(--font-secondary);
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .popup-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* --- Modal Styles (for booking and ticket) --- */
+        .modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s, visibility 0.4s;
+        }
+
+        .modal-container.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            padding: 30px 40px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.4s;
+            width: 90%;
+            max-width: 400px; /* Limit modal width */
+        }
+
+        .modal-container.show .modal-content {
+            transform: scale(1);
+        }
+
+        /* --- Form Styles --- */
+        #booking-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+        #booking-form label {
+            font-weight: bold;
+        }
+        #booking-form input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        /* --- Ticket Display Styles --- */
+        .ticket-display {
+            text-align: left;
+            border: 2px dashed var(--primary-color);
+        }
+        #ticket-content p {
+            font-size: 1.1em;
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        #ticket-id {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            background-color: var(--bg-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            height: 70px;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        .nav-controls button {
+            margin-left: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border: 1px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        /* --- Hero Section with Background Video --- */
+        .hero {
+            position: relative; /* Needed for absolute positioning of video */
+            height: 60vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            overflow: hidden; /* Hide video overflow */
+            background: #000; /* Fallback background if video fails to load */
+        }
+
+        /* YouTube Video Styles */
+        #hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh; /* Make it cover the viewport as much as possible */
+            object-fit: cover; /* Cover the entire container */
+            transform: translate(-50%, -50%);
+            z-index: 1; /* Place behind text */
+        }
+
+        .hero-text {
+            position: relative; /* Bring text above the video */
+            z-index: 2;
+            background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay for text readability */
+            padding: 20px 40px;
+            border-radius: 10px;
+        }
+
+        .hero-text h1 {
+            font-family: var(--font-secondary);
+            font-size: 3em;
+        }
+
+        /* --- Content Sections --- */
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .content-section h2 {
+            font-family: var(--font-secondary);
+            font-size: 2.5em;
+            margin-bottom: 40px;
+        }
+
+        .alternate-bg {
+            background-color: var(--secondary-color);
+        }
+
+        /* --- Event Grid --- */
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .event-card {
+            background-color: var(--bg-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .poster-container {
+            perspective: 1000px; /* For 3D effect */
+        }
+
+        .event-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s;
+        }
+
+        .event-card:hover img {
+            transform: rotateY(15deg);
+        }
+
+        .event-card h3, .event-card p {
+            text-align: left;
+            padding: 0 20px;
+        }
+
+        .event-card button {
+            display: block;
+            width: calc(100% - 40px);
+            margin: 20px;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        footer a {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-popup" class="popup-container">
+        <div class="popup-content">
+            <span class="close-btn" id="close-welcome">&times;</span>
+            <h2>Bonjour!</h2>
+            <p>Bienvenue à la Scène Française. Votre porte d'entrée vers des événements musicaux exceptionnels.</p>
+            <button id="explore-tickets-btn" class="popup-btn">Explorer les billets</button>
+        </div>
+    </div>
+
+    <div id="booking-modal" class="modal-container">
+        <div class="modal-content">
+            <span class="close-btn" id="close-booking">&times;</span>
+            <h2>Réservez votre billet</h2>
+            <form id="booking-form">
+                <p><strong>Événement:</strong> <span id="event-title-form"></span></p>
+                <label for="user-name">Nom:</label>
+                <input type="text" id="user-name" required>
+                <label for="user-age">Âge:</label>
+                <input type="number" id="user-age" required min="1">
+                <button type="submit" class="popup-btn">Procéder au paiement</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="ticket-modal" class="modal-container">
+        <div class="modal-content ticket-display">
+            <span class="close-btn" id="close-ticket">&times;</span>
+            <h2>Votre billet est confirmé !</h2>
+            <div id="ticket-content">
+                <p><strong>Nom:</strong> <span id="ticket-name"></span></p>
+                <p><strong>Événement:</strong> <span id="ticket-event"></span></p>
+                <p><strong>Identifiant du billet:</strong> <span id="ticket-id"></span></p>
+            </div>
+            <button id="download-pdf" class="popup-btn">Télécharger le PDF</button>
+        </div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="logo">Website name</div>
+            <ul class="nav-links">
+                <li><a href="#events">Événements</a></li>
+                <!-- <li><a href="#artists">Artists</a></li>
+                <li><a href="#history">History</a></li>
+                <li><a href="#contact">Contact</a></li> -->
+            </ul>
+            <div class="nav-controls">
+                <button id="lang-toggle">FR</button>
+                <button id="theme-toggle">🌙</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <iframe
+                id="hero-video"
+                src="https://www.youtube.com/embed/KNOQJO-9SPk?controls=0&autoplay=1&mute=1&loop=1&playlist=KNOQJO-9SPk&modestbranding=1&iv_load_policy=3"
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen
+            ></iframe>
+            <div class="hero-text">
+                <h1>Vivez la musique comme jamais auparavant</h1>
+                <p>Découvrez et réservez vos billets pour les meilleurs événements musicaux en France et au-delà.</p>
+            </div>
+        </section>
+
+        <section id="events" class="content-section">
+            <h2>Événements en vedette</h2>
+            <div class="event-grid">
+                <div class="event-card">
+                    <div class="poster-container">
+                        <img src="https://via.placeholder.com/300x400.png?text=Artist+Live" alt="Event Poster">
+                    </div>
+                    <h3>Nom de l'artiste en direct</h3>
+                    <p><strong>Lieu:</strong> Le Grand Rex, Paris</p>
+                    <p><strong>Date:</strong> 25 Oct 2025</p>
+                    <button class="ticket-btn" 
+                            data-event-name="Artist Name Live"
+                            data-event-date="25 Oct 2025"
+                            data-event-venue="Le Grand Rex, Paris"
+                            data-poster-url="https://via.placeholder.com/300x400.png?text=Artist+Live">Get Tickets</button>
+                </div>
+                <div class="event-card">
+                    <div class="poster-container">
+                       <img src="https://via.placeholder.com/300x400.png?text=Classical+Fusion" alt="Event Poster">
+                    </div>
+                    <h3>Soirée Fusion Classique</h3>
+                    <p><strong>Lieu:</strong> Opéra Garnier, Paris</p>
+                    <p><strong>Date:</strong> 15 Nov 2025</p>
+                    <button class="ticket-btn" 
+                            data-event-name="Classical Fusion Night"
+                            data-event-date="15 Nov 2025"
+                            data-event-venue="Opéra Garnier, Paris"
+                            data-poster-url="https://via.placeholder.com/300x400.png?text=Classical+Fusion">Get Tickets</button>
+                </div>
+                <div class="event-card">
+                    <div class="poster-container">
+                       <img src="jazz.webp" alt="Event Poster">
+                    </div>
+                    <h3>Festival de Jazz</h3>
+                    <p><strong>Lieu:</strong> La Villette, Paris</p>
+                    <p><strong>Date:</strong> 05 Dec 2025</p>
+                    <button class="ticket-btn" 
+                            data-event-name="Jazz Festival"
+                            data-event-date="05 Dec 2025"
+                            data-event-venue="La Villette, Paris"
+                            data-poster-url="jazz.webp">Obtenez des billets</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="history" class="content-section alternate-bg">
+            <h2>Un aperçu de l'art et de la musique française</h2>
+            <p>Des compositions classiques de l'époque baroque aux chansons vibrantes et aux scènes électroniques modernes, la musique française possède une histoire riche et diversifiée. Cette section vous propose un voyage dans le temps, à la découverte des mouvements, des artistes et des innovations qui ont façonné le paysage sonore culturel du pays.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025  Tous droits réservés.</p>
+        <p><a href="#">Conditions générales</a></p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const { jsPDF } = window.jspdf;
+
+            // --- Welcome Popup Logic ---
+            const welcomePopup = document.getElementById('welcome-popup');
+            const closeWelcomeBtn = document.getElementById('close-welcome');
+            const exploreBtn = document.getElementById('explore-tickets-btn');
+
+            setTimeout(() => {
+                welcomePopup.classList.add('show');
+            }, 1000);
+
+            const closeWelcomePopup = () => {
+                welcomePopup.classList.remove('show');
+            };
+
+            closeWelcomeBtn.addEventListener('click', closeWelcomePopup);
+            exploreBtn.addEventListener('click', closeWelcomePopup);
+
+            // --- All Modal Elements for Booking ---
+            const bookingModal = document.getElementById('booking-modal');
+            const ticketModal = document.getElementById('ticket-modal');
+            const bookingForm = document.getElementById('booking-form');
+            const allTicketButtons = document.querySelectorAll('.ticket-btn');
+            const closeBookingBtn = document.getElementById('close-booking');
+            const closeTicketBtn = document.getElementById('close-ticket');
+
+            // To store current booking info for ticket generation
+            let currentEventName = '';
+            let currentEventDate = '';
+            let currentEventVenue = '';
+            let currentUserName = '';
+            let currentTicketId = '';
+            let currentEventPosterUrl = ''; // New: Store poster URL
+
+            // --- Function to generate a unique ticket ID ---
+            const generateTicketId = () => {
+                const timestamp = Date.now();
+                const randomNumber = Math.floor(Math.random() * 1000);
+                return `SF-${timestamp}-${randomNumber}`;
+            };
+
+            // --- Open Booking Modal ---
+            allTicketButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    currentEventName = button.getAttribute('data-event-name');
+                    currentEventDate = button.getAttribute('data-event-date'); // New
+                    currentEventVenue = button.getAttribute('data-event-venue'); // New
+                    currentEventPosterUrl = button.getAttribute('data-poster-url'); // New
+                    
+                    document.getElementById('event-title-form').textContent = currentEventName;
+                    bookingModal.classList.add('show');
+                });
+            });
+
+            // --- Handle Booking Form Submission ---
+            bookingForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent page refresh
+                currentUserName = document.getElementById('user-name').value;
+                const userAge = document.getElementById('user-age').value;
+
+                if (currentUserName && userAge) {
+                    // Simulate payment success and generate ticket
+                    currentTicketId = generateTicketId();
+                    
+                    // Populate and show the ticket modal
+                    document.getElementById('ticket-name').textContent = currentUserName;
+                    document.getElementById('ticket-event').textContent = currentEventName;
+                    document.getElementById('ticket-id').textContent = currentTicketId;
+                    
+                    bookingModal.classList.remove('show');
+                    ticketModal.classList.add('show');
+                    bookingForm.reset();
+                }
+            });
+            
+            // --- PDF Generation ---
+            document.getElementById('download-pdf').addEventListener('click', () => {
+                const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+
+                const margin = 15; // All-around margin
+                let yPos = margin; // Starting Y position
+
+                // --- Header ---
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(28);
+                doc.setTextColor(106, 13, 173); // Purple
+                doc.text("Scène Française", pageWidth / 2, yPos + 10, { align: 'center' });
+                yPos += 20;
+
+                doc.setFontSize(18);
+                doc.setTextColor(0, 0, 0); // Black
+                doc.text("Event Ticket", pageWidth / 2, yPos + 5, { align: 'center' });
+                yPos += 25;
+
+                // --- Event Poster ---
+                if (currentEventPosterUrl) {
+                    const img = new Image();
+                    img.src = currentEventPosterUrl;
+                    img.onload = function() {
+                        const imgWidth = 80; // Fixed width for the image
+                        const imgHeight = (this.height * imgWidth) / this.width; // Maintain aspect ratio
+                        const imgX = (pageWidth / 2) - (imgWidth / 2); // Center the image
+                        doc.addImage(img, 'PNG', imgX, yPos, imgWidth, imgHeight);
+                        yPos += imgHeight + 15; // Space after image
+
+                        // --- Ticket Details ---
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(14);
+                        doc.text(`Event: ${currentEventName}`, margin, yPos);
+                        yPos += 10;
+                        doc.text(`Venue: ${currentEventVenue}`, margin, yPos);
+                        yPos += 10;
+                        doc.text(`Date: ${currentEventDate}`, margin, yPos);
+                        yPos += 10;
+                        doc.text(`Name: ${currentUserName}`, margin, yPos);
+                        yPos += 15;
+
+                        doc.setFontSize(18);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(106, 13, 173); // Purple
+                        doc.text(`Ticket ID: ${currentTicketId}`, margin, yPos);
+                        yPos += 25;
+
+                        // --- Fake Barcode ---
+                        doc.setTextColor(0,0,0); // Black for barcode
+                        const barcodeX = margin;
+                        const barcodeY = yPos;
+                        const barWidth = 1.5;
+                        const barHeight = 30;
+                        
+                        // Draw a pattern of varying thick/thin bars
+                        for(let i = 0; i < 40; i++) { // Around 40 bars
+                            const xOffset = barcodeX + (i * (barWidth + (Math.random() < 0.3 ? 0.5 : 0.2))); // Varying spacing/width
+                            const currentBarHeight = barHeight * (Math.random() < 0.1 ? 0.8 : 1); // Some bars might be shorter
+                            const currentBarWidth = barWidth * (Math.random() < 0.2 ? 1.5 : 1); // Some bars might be wider
+
+                            doc.rect(xOffset, barcodeY, currentBarWidth, currentBarHeight, 'F'); // 'F' for fill
+                        }
+                        doc.setFontSize(10);
+                        doc.text("012345678901234567890", barcodeX, barcodeY + barHeight + 5); // Fake numbers below barcode
+                        yPos += barHeight + 15;
+
+                        // --- Footer ---
+                        doc.setFontSize(10);
+                        doc.setTextColor(100); // Gray
+                        doc.text("Thank you for choosing Scène Française!", pageWidth / 2, pageHeight - margin, { align: 'center' });
+                        
+                        doc.save(`Scène Française Ticket - ${currentEventName.replace(/\s+/g, '-')}.pdf`);
+                    }
+                    img.onerror = function() {
+                        // Fallback if image fails to load
+                        console.error("Failed to load poster image for PDF.");
+                        // Generate PDF without image, or with a placeholder
+                        generatePdfWithoutImage(doc, yPos, pageWidth, pageHeight, margin);
+                    };
+                } else {
+                    // If no poster URL is provided
+                    generatePdfWithoutImage(doc, yPos, pageWidth, pageHeight, margin);
+                }
+            });
+
+            // Fallback function for PDF generation without image
+            function generatePdfWithoutImage(doc, yPos, pageWidth, pageHeight, margin) {
+                 // --- Ticket Details ---
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(14);
+                doc.text(`Event: ${currentEventName}`, margin, yPos);
+                yPos += 10;
+                doc.text(`Venue: ${currentEventVenue}`, margin, yPos);
+                yPos += 10;
+                doc.text(`Date: ${currentEventDate}`, margin, yPos);
+                yPos += 10;
+                doc.text(`Name: ${currentUserName}`, margin, yPos);
+                yPos += 15;
+
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(106, 13, 173); // Purple
+                doc.text(`Ticket ID: ${currentTicketId}`, margin, yPos);
+                yPos += 25;
+
+                // --- Fake Barcode ---
+                doc.setTextColor(0,0,0); // Black for barcode
+                const barcodeX = margin;
+                const barcodeY = yPos;
+                const barWidth = 1.5;
+                const barHeight = 30;
+                
+                for(let i = 0; i < 40; i++) { 
+                    const xOffset = barcodeX + (i * (barWidth + (Math.random() < 0.3 ? 0.5 : 0.2)));
+                    const currentBarHeight = barHeight * (Math.random() < 0.1 ? 0.8 : 1);
+                    const currentBarWidth = barWidth * (Math.random() < 0.2 ? 1.5 : 1);
+
+                    doc.rect(xOffset, barcodeY, currentBarWidth, currentBarHeight, 'F');
+                }
+                doc.setFontSize(10);
+                doc.text("012345678901234567890", barcodeX, barcodeY + barHeight + 5);
+                yPos += barHeight + 15;
+
+                // --- Footer ---
+                doc.setFontSize(10);
+                doc.setTextColor(100); // Gray
+                doc.text("Thank you for choosing Scène Française!", pageWidth / 2, pageHeight - margin, { align: 'center' });
+                
+                doc.save(`Scène Française Ticket - ${currentEventName.replace(/\s+/g, '-')}-No-Image.pdf`);
+            }
+
+            // --- Functions to close modals ---
+            closeBookingBtn.addEventListener('click', () => bookingModal.classList.remove('show'));
+            closeTicketBtn.addEventListener('click', () => ticketModal.classList.remove('show'));
+
+            // --- Theme (Dark/Light Mode) Toggle ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                themeToggle.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            });
+
+            // --- Language Toggle (Placeholder) ---
+            const langToggle = document.getElementById('lang-toggle');
+            langToggle.addEventListener('click', () => {
+                if (langToggle.textContent === 'FR') {
+                    langToggle.textContent = 'EN';
+                    alert('Website language would now be English. (Functionality to be built)');
+                } else {
+                    langToggle.textContent = 'FR';
+                    alert('Le site web serait maintenant en français. (Fonctionnalité à construire)');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
