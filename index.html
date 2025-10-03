@@ -211,39 +211,17 @@
             border-radius: 5px;
         }
 
-        /* --- Hero Section with Background Video --- */
+        /* --- Hero Section with Static Image --- */
         .hero {
-            position: relative; /* Needed for absolute positioning of video */
             height: 60vh;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(https://via.placeholder.com/1500x800.png?text=Musical+Concert+Image) no-repeat center center/cover;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
             color: white;
-            overflow: hidden; /* Hide video overflow */
-            background: #000; /* Fallback background if video fails to load */
         }
-
-        /* YouTube Video Styles */
-        #hero-video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100vw;
-            height: 100vh; /* Make it cover the viewport as much as possible */
-            object-fit: cover; /* Cover the entire container */
-            transform: translate(-50%, -50%);
-            z-index: 1; /* Place behind text */
-        }
-
-        .hero-text {
-            position: relative; /* Bring text above the video */
-            z-index: 2;
-            background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay for text readability */
-            padding: 20px 40px;
-            border-radius: 10px;
-        }
-
+        
         .hero-text h1 {
             font-family: var(--font-secondary);
             font-size: 3em;
@@ -376,9 +354,6 @@
             <div class="logo">Website name</div>
             <ul class="nav-links">
                 <li><a href="#events">Événements</a></li>
-                <!-- <li><a href="#artists">Artists</a></li>
-                <li><a href="#history">History</a></li>
-                <li><a href="#contact">Contact</a></li> -->
             </ul>
             <div class="nav-controls">
                 <button id="lang-toggle">FR</button>
@@ -389,13 +364,6 @@
 
     <main>
         <section class="hero">
-            <iframe
-                id="hero-video"
-                src="https://www.youtube.com/embed/KNOQJO-9SPk?controls=0&autoplay=1&mute=1&loop=1&playlist=KNOQJO-9SPk&modestbranding=1&iv_load_policy=3"
-                frameborder="0"
-                allow="autoplay; encrypted-media"
-                allowfullscreen
-            ></iframe>
             <div class="hero-text">
                 <h1>Vivez la musique comme jamais auparavant</h1>
                 <p>Découvrez et réservez vos billets pour les meilleurs événements musicaux en France et au-delà.</p>
