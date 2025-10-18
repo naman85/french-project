@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>name</title>
+    <title>NEON NEXUS</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
@@ -19,32 +21,25 @@
             --subtle-text: #A0A0A0;
             --border-color: rgba(255, 255, 255, 0.1);
         }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        /* General Body & Layout */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--background-color); /* Fallback color */
-            /* Add the image background for the rest of the site */
+            background-color: var(--background-color);
             background-image: url('background.jpg');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed; /* Makes the background stay in place on scroll */
+            background-attachment: fixed;
             color: var(--text-color);
             overflow-x: hidden;
         }
+        h1, h2, h3, h4 { font-weight: 700; }
+        a { text-decoration: none; color: var(--text-color); }
 
-        h1, h2, h3, h4 {
-            font-weight: 700;
-        }
-
-        a {
-            text-decoration: none;
-            color: var(--text-color);
+        /* Class to hide/show page sections */
+        .hidden {
+            display: none;
         }
 
         /* --- Header & Navigation --- */
@@ -57,603 +52,318 @@
             z-index: 1000;
             border-bottom: 1px solid var(--border-color);
         }
+        nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px; height: 70px; }
+        .logo { font-size: 1.8em; font-weight: 700; color: #fff; text-shadow: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon); }
+        .nav-links { list-style: none; display: flex; gap: 40px; align-items: center; }
+        .nav-links a { transition: color 0.3s, text-shadow 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: #fff; text-shadow: 0 0 5px var(--secondary-neon); }
+        #lang-toggle { background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: background-color 0.3s, border-color 0.3s; }
+        #lang-toggle:hover { background-color: var(--card-background); border-color: var(--primary-neon); }
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            height: 70px;
-        }
-
-        .logo {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon);
-        }
-
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 40px;
-            align-items: center;
-        }
-
-        .nav-links a {
-            transition: color 0.3s, text-shadow 0.3s;
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: #fff;
-            text-shadow: 0 0 5px var(--secondary-neon);
-        }
-
-        #lang-toggle {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        #lang-toggle:hover {
-            background-color: var(--card-background);
-            border-color: var(--primary-neon);
-        }
-
-        /* --- Accueil Section (Hero with Video) --- */
-        #accueil {
-            position: relative; /* Needed to position the video and overlay */
-            height: 100vh; /* Full screen height */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden; /* Hide video overflow */
-            padding: 0 20px; /* Keep side padding */
-        }
-        
-        #bg-video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2; /* Place it behind the overlay and content */
-            object-fit: cover;
-        }
-
-        /* Overlay for text readability over the video */
-        #accueil::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: -1; /* Between video and content */
-        }
+        /* --- Accueil Section --- */
+        #accueil { position: relative; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; padding: 0 20px; }
+        #bg-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; object-fit: cover; }
+        #accueil::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: -1; }
 
         /* --- General Section Styling --- */
-        .content-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 80px 20px;
-            text-align: center;
-            background-color: rgba(13, 11, 20, 0.8); /* Add a slight background to sections for readability */
-        }
-
-        /* Remove top/bottom padding for the hero section as height is set */
-        #accueil.content-section {
-            padding-top: 0;
-            padding-bottom: 0;
-            background-color: transparent; /* The video is the background here */
-        }
-        
-        .section-tag {
-            display: inline-block;
-            padding: 6px 15px;
-            border: 1px solid var(--primary-neon);
-            border-radius: 20px;
-            font-size: 0.9em;
-            color: var(--primary-neon);
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 3em;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-
-        .section-subtitle {
-            font-size: 1.1em;
-            color: var(--subtle-text);
-            max-width: 600px;
-            margin: 0 auto 50px auto;
-        }
+        .content-section { max-width: 1200px; margin: 0 auto; padding: 80px 20px; text-align: center; background-color: rgba(13, 11, 20, 0.8); }
+        #accueil.content-section { padding-top: 0; padding-bottom: 0; background-color: transparent; }
+        .section-tag { display: inline-block; padding: 6px 15px; border: 1px solid var(--primary-neon); border-radius: 20px; font-size: 0.9em; color: var(--primary-neon); margin-bottom: 20px; }
+        .section-title { font-size: 3em; margin-bottom: 15px; color: #fff; }
+        .section-subtitle { font-size: 1.1em; color: var(--subtle-text); max-width: 600px; margin: 0 auto 50px auto; }
 
         /* --- Card Grids --- */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .card { background-color: var(--card-background); border-radius: 15px; border: 1px solid var(--border-color); padding: 20px; text-align: left; transition: transform 0.3s, box-shadow 0.3s; overflow: hidden; }
+        .card:hover { transform: translateY(-10px); box-shadow: 0 0 20px var(--primary-neon), 0 0 30px var(--primary-neon); border-color: var(--primary-neon); }
         
-        /* Base Card Style */
-        .card {
-            background-color: var(--card-background);
+        /* Specific Card Styles (Fame, Event) */
+        .fame-card img { width: 100%; border-radius: 10px; margin-bottom: 15px; aspect-ratio: 1 / 1; object-fit: cover; }
+        .fame-card h3 { font-size: 1.4em; }
+        .fame-card p { color: var(--subtle-text); }
+        .event-card { padding: 0; }
+        .event-card .card-content { padding: 20px; }
+        .event-card img { width: 100%; }
+        .event-card .tag-new { position: absolute; top: 10px; right: 10px; background-color: var(--primary-neon); color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 0.8em; font-weight: 600; }
+        .event-card h3 { font-size: 1.5em; margin-bottom: 10px; }
+        .event-info { display: flex; gap: 10px; color: var(--subtle-text); margin-bottom: 20px; }
+        .ticket-categories { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .ticket-categories span { padding: 5px 10px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 0.9em; }
+        
+        /* Universal Button Style */
+        .btn-reserve { display: inline-block; width: auto; padding: 12px 30px; margin-top: 20px; border-radius: 8px; border: none; background: linear-gradient(90deg, var(--primary-neon), var(--secondary-neon)); color: #fff; font-weight: 600; cursor: pointer; text-align: center; transition: transform 0.2s, box-shadow 0.3s; font-size: 1em; }
+        .btn-reserve:hover { transform: scale(1.03); box-shadow: 0 0 15px var(--secondary-neon); }
+        #ticket-form .btn-reserve { display: block; width: 100%;}
+
+
+        /* Gallery Styles & Footer */
+        .gallery-title { font-size: 1.8em; color: var(--text-color); margin-top: 80px; margin-bottom: 30px; border-top: 1px solid var(--border-color); padding-top: 40px; }
+        .photo-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .photo-gallery-grid img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-color); transition: transform 0.3s, border-color 0.3s; }
+        .photo-gallery-grid img:hover { transform: scale(1.05); border-color: var(--secondary-neon); }
+        footer { background-color: var(--card-background); border-top: 1px solid var(--border-color); padding: 60px 20px; }
+        
+        /* --- STYLES FOR THE BOOKING PAGE --- */
+        #booking-page-container {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 40px;
+            background-color: rgba(13, 11, 20, 0.85);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             border: 1px solid var(--border-color);
-            padding: 20px;
-            text-align: left;
-            transition: transform 0.3s, box-shadow 0.3s;
-            overflow: hidden;
         }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 0 20px var(--primary-neon), 0 0 30px var(--primary-neon);
-            border-color: var(--primary-neon);
-        }
-
-        /* --- Wall of Fame Section --- */
-        .fame-card img {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-        }
-        .fame-card h3 {
-            font-size: 1.4em;
-        }
-        .fame-card p {
-            color: var(--subtle-text);
-        }
-
-        /* --- Events Section --- */
-        .event-card {
-            padding: 0;
-        }
-        .event-card .card-content {
-            padding: 20px;
-        }
-        .event-card img {
-            width: 100%;
-        }
-        .event-card .tag-new {
-            position: absolute;
-            top: 10px; right: 10px;
-            background-color: var(--primary-neon);
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-        .event-card h3 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-        .event-info {
-            display: flex;
-            gap: 10px;
-            color: var(--subtle-text);
-            margin-bottom: 20px;
-        }
-        .ticket-categories {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        .ticket-categories span {
-            padding: 5px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        .btn-reserve {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            border-radius: 8px;
-            border: none;
-            background: linear-gradient(90deg, var(--primary-neon), var(--secondary-neon));
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.3s;
-        }
-        .btn-reserve:hover {
-            transform: scale(1.03);
-            box-shadow: 0 0 15px var(--secondary-neon);
-        }
-
-        /* --- Records Section --- */
-        .record-card {
-            text-align: center;
-        }
-        .record-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--primary-neon);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 20px auto;
-            color: var(--primary-neon);
-        }
-        .record-card h3 {
-            font-size: 1.8em;
-            color: #fff;
-        }
-        .record-card p {
-            color: var(--subtle-text);
-        }
-
-        /* --- Venues Section --- */
-        .venue-card {
-            padding: 0;
-        }
-        .venue-card img {
-            width: 100%;
-        }
-        .venue-card-content {
-            padding: 20px;
-        }
-        .venue-card h3 {
-            margin-bottom: 10px;
-        }
-        .venue-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--subtle-text);
-            margin-bottom: 5px;
-        }
-        .venue-info svg {
-            fill: var(--subtle-text);
-        }
-        
-        /* --- Photo Gallery Styles --- */
-        .gallery-title {
-            font-size: 1.8em;
-            color: var(--text-color);
-            margin-top: 80px;
-            margin-bottom: 30px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 40px;
-        }
-        .photo-gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .photo-gallery-grid img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            transition: transform 0.3s, border-color 0.3s;
-        }
-        .photo-gallery-grid img:hover {
-            transform: scale(1.05);
-            border-color: var(--secondary-neon);
-        }
-
-        /* --- Contact Section --- */
-        .contact-grid {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 40px;
-            text-align: left;
-        }
-        .contact-form input, .contact-form textarea {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--card-background);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-color);
-            margin-bottom: 15px;
-        }
-        .contact-info-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* --- Footer --- */
-        footer {
-            background-color: var(--card-background);
-            border-top: 1px solid var(--border-color);
-            padding: 60px 20px;
-        }
-        .footer-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            text-align: left;
-        }
-        .footer-col h4 {
-            font-size: 1.2em;
-            margin-bottom: 15px;
-        }
-        .footer-col p, .footer-col a {
-            color: var(--subtle-text);
-            margin-bottom: 10px;
-            display: block;
-            transition: color 0.3s;
-        }
-        .footer-col a:hover {
-            color: var(--primary-neon);
-        }
-        .social-icons {
-            display: flex;
-            gap: 15px;
-        }
-        .copyright {
-            text-align: center;
-            margin-top: 60px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            color: var(--subtle-text);
-        }
-
+        #event-image { width: 100%; border-radius: 10px; margin-bottom: 20px; }
+        #event-title { font-size: 2.5em; font-weight: 700; color: #fff; margin-bottom: 15px; }
+        #event-description { font-size: 1.1em; color: var(--subtle-text); line-height: 1.6; margin-bottom: 30px; }
+        .booking-form h3 { font-size: 1.5em; margin-bottom: 20px; border-top: 1px solid var(--border-color); padding-top: 30px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-group input { width: 100%; padding: 12px; background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1em; }
+        .btn-back { background: var(--card-background); border: 1px solid var(--border-color); color: var(--text-color); margin-top: 10px; }
+        .btn-back:hover { box-shadow: 0 0 15px var(--primary-neon); border-color: var(--primary-neon); }
     </style>
 </head>
 <body>
 
     <header>
         <nav>
-            <div class="logo">name</div>
+            <div class="logo">NEON NEXUS</div>
             <ul class="nav-links">
-                <li><a href="#accueil" data-key="nav_home">Accueil</a></li>
-                <li><a href="#wall-of-fame" data-key="nav_fame">Wall of Fame</a></li>
-                <li><a href="#evenements" data-key="nav_events">Événements</a></li>
-                <li><a href="#records" data-key="nav_records">Records</a></li>
-                <li><a href="#lieux" data-key="nav_venues">Lieux</a></li>
-                <li><a href="#contact" data-key="nav_contact">Contact</a></li>
+                <li><a href="#" class="nav-link" data-target="accueil">Accueil</a></li>
+                <li><a href="#" class="nav-link" data-target="wall-of-fame">Wall of Fame</a></li>
+                <li><a href="#" class="nav-link" data-target="evenements">Événements</a></li>
+                <li><a href="#" class="nav-link" data-target="venues">Salles</a></li>
                 <li><button id="lang-toggle">EN</button></li>
             </ul>
         </nav>
     </header>
 
     <main>
-        <section id="accueil" class="content-section">
-            <video autoplay loop muted playsinline id="bg-video">
-                <source src="video.mp4" type="video/mp4">
-            </video>
+        <div id="main-page-content">
+            <section id="accueil" class="content-section">
+                <video autoplay loop muted playsinline id="bg-video">
+                    <source src="video.mp4" type="video/mp4">
+                </video>
+                <div class="section-tag" data-key="home_tag">Bienvenue</div>
+                <h1 class="section-title" data-key="home_title">"La musique est le langage de l'âme"</h1>
+                <p class="section-subtitle" data-key="home_subtitle">- Les Légendes de la Musique</p>
+            </section>
             
-            <div class="section-tag" data-key="home_tag">Bienvenue</div>
-            <h1 class="section-title" data-key="home_title">"La musique est le langage de l'âme"</h1>
-            <p class="section-subtitle" data-key="home_subtitle">- Les Légendes de la Musique</p>
-        </section>
-        
-        <section id="wall-of-fame" class="content-section">
-            <div class="section-tag" data-key="fame_tag">Légendes</div>
-            <h2 class="section-title" data-key="fame_title">Wall of Fame</h2>
-            <p class="section-subtitle" data-key="fame_subtitle">Découvrez les artistes légendaires qui ont marqué l'histoire de la musique</p>
-            <div class="card-grid">
-                </div>
-
-            <h4 class="gallery-title" data-key="gallery_fame_title">Galerie des Légendes</h4>
-            <div class="photo-gallery-grid">
-                <img src="https://via.placeholder.com/300x300.png?text=Artist+Backstage" alt="Artist Backstage">
-                <img src="https://via.placeholder.com/300x300.png?text=Iconic+Performance" alt="Iconic Performance">
-                <img src="https://via.placeholder.com/300x300.png?text=Crowd+View" alt="Crowd View">
-                <img src="https://via.placeholder.com/300x300.png?text=Famous+Guitar" alt="Famous Guitar">
-            </div>
-        </section>
-
-        <section id="evenements" class="content-section">
-            <div class="section-tag" data-key="events_tag">Prochainement</div>
-            <h2 class="section-title" data-key="events_title">Événements à venir</h2>
-            <p class="section-subtitle" data-key="events_subtitle">Réservez vos places pour les concerts les plus attendus de l'année</p>
-            <div class="card-grid">
-                </div>
-
-            <h4 class="gallery-title" data-key="gallery_events_title">Photos des Événements Précédents</h4>
-            <div class="photo-gallery-grid">
-                <img src="https://via.placeholder.com/300x300.png?text=Concert+Lights" alt="Concert Lights">
-                <img src="https://via.placeholder.com/300x300.png?text=Live+Band" alt="Live Band">
-                <img src="https://via.placeholder.com/300x300.png?text=Festival+Atmosphere" alt="Festival Atmosphere">
-                <img src="https://via.placeholder.com/300x300.png?text=Singer+on+Stage" alt="Singer on Stage">
-            </div>
-        </section>
-
-        <section id="records" class="content-section">
-            <div class="section-tag" data-key="records_tag">Succès</div>
-            <h2 class="section-title" data-key="records_title">Records & Réalisations</h2>
-            <p class="section-subtitle" data-key="records_subtitle">Les chiffres extraordinaires de nos artistes et événements</p>
-            <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                 </div>
-        </section>
-
-        <section id="lieux" class="content-section">
-            <div class="section-tag" data-key="venues_tag">Lieux Prestigieux</div>
-            <h2 class="section-title" data-key="venues_title">Lieux en France</h2>
-            <p class="section-subtitle" data-key="venues_subtitle">Les plus prestigieuses salles de concert en France</p>
-            <div class="card-grid" style="grid-template-columns: 1fr 1fr;">
-                 </div>
-
-            <h4 class="gallery-title" data-key="gallery_venues_title">Galerie des Lieux</h4>
-            <div class="photo-gallery-grid">
-                <img src="https://via.placeholder.com/300x300.png?text=Venue+Interior" alt="Venue Interior">
-                <img src="https://via.placeholder.com/300x300.png?text=Stage+View" alt="Stage View">
-                <img src="https://via.placeholder.com/300x300.png?text=Architectural+Detail" alt="Architectural Detail">
-                <img src="https://via.placeholder.com/300x300.png?text=Entrance+Hall" alt="Entrance Hall">
-            </div>
-        </section>
-
-        <section id="contact" class="content-section">
-            <div class="section-tag" data-key="contact_tag">Contactez-nous</div>
-            <h2 class="section-title" data-key="contact_title">Restez Connecté</h2>
-            <p class="section-subtitle" data-key="contact_subtitle">Une question ? Besoin d'informations ? Notre équipe est là pour vous</p>
-            <div class="contact-grid">
-                <form class="contact-form">
-                    <input type="text" data-key="form_name" placeholder="Votre nom" required>
-                    <input type="email" data-key="form_email" placeholder="Votre email" required>
-                    <textarea rows="5" data-key="form_message" placeholder="Votre message" required></textarea>
-                    <button type="submit" class="btn-reserve" data-key="form_button">Envoyer le message</button>
-                </form>
-                <div class="contact-info">
+            <section id="wall-of-fame" class="content-section">
+                <div class="section-tag" data-key="fame_tag">Légendes</div>
+                <h2 class="section-title" data-key="fame_title">Wall of Fame</h2>
+                <p class="section-subtitle" data-key="fame_subtitle">Découvrez les artistes légendaires qui ont marqué l'histoire de la musique</p>
+                <div class="card-grid">
                     </div>
+                <button id="show-more-artists" class="btn-reserve">Voir plus</button>
+
+                <div class="photo-gallery-grid">
+                    </div>
+            </section>
+    
+            <section id="evenements" class="content-section">
+                <div class="section-tag" data-key="events_tag">Prochainement</div>
+                <h2 class="section-title" data-key="events_title">Événements à venir</h2>
+                <p class="section-subtitle" data-key="events_subtitle">Réservez vos places pour les concerts les plus attendus de l'année</p>
+                <div class="card-grid">
+                    </div>
+            </section>
+
+            <section id="venues" class="content-section">
+                <div class="section-tag">Lieux Prestigieux</div>
+                <h2 class="section-title">Lieux en France</h2>
+                <p class="section-subtitle">Les salles de concert les plus prestigieuses de France</p>
+                <div class="photo-gallery-grid">
+                    <img src="venue1.jpg" alt="L'Olympia concert hall in Paris">
+                    <img src="venue2.jpeg" alt="Accor Arena in Paris">
+                    <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzc0fDB8MXxzZWFyY2h8OHx8cGhpbGhhcm1vbmllJTIwZGUlMjBwYXJpcyUyMGNvbmNlcnR8ZW58MHx8fHwxNjg5MTE5NDY1&ixlib=rb-4.0.3&q=80&w=1080" alt="Philharmonie de Paris">
+                    <img src="venue4.jpeg" alt="La Seine Musicale">
+                    <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzc0fDB8MXxzZWFyY2h8Mnx8Y29uY2VydCUyMHN0YWdlJTIwbGlnaHRzfGVufDB8fHx8MTY4OTExOTUyOA&ixlib=rb-4.0.3&q=80&w=1080" alt="Le Zénith Paris stage lights">
+                </div>
+            </section>
+        </div>
+
+        <section id="booking-page" class="content-section hidden">
+            <div id="booking-page-container">
+                <img id="event-image" src="" alt="Image de l'événement">
+                <h1 id="event-title"></h1>
+                <p id="event-description"></p>
+        
+                <div class="booking-form">
+                    <h3>Réservez votre place</h3>
+                    <form id="ticket-form">
+                        <div class="form-group">
+                            <label for="name">Nom complet</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Âge</label>
+                            <input type="number" id="age" required>
+                        </div>
+                        <button type="submit" class="btn-reserve">Book Now & Generate PDF</button>
+                        <button type="button" id="back-to-main" class="btn-reserve btn-back">Retour</button>
+                    </form>
+                </div>
             </div>
         </section>
     </main>
-
+    
     <footer>
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>NEON NEXUS</h4>
-                <p data-key="footer_desc">Le coeur des événements musicaux du monde</p>
-            </div>
-            <div class="footer-col">
-                <h4 data-key="footer_nav">Navigation</h4>
-                <a href="#accueil" data-key="nav_home">Accueil</a>
-                <a href="#wall-of-fame" data-key="nav_fame">Wall of Fame</a>
-                <a href="#evenements" data-key="nav_events">Événements</a>
-                <a href="#lieux" data-key="nav_venues">Lieux</a>
-            </div>
-            <div class="footer-col">
-                <h4 data-key="footer_legal">Légal</h4>
-                <a href="#" data-key="footer_terms">Conditions Générales</a>
-                <a href="#" data-key="footer_privacy">Politique de Confidentialité</a>
-                <a href="#" data-key="footer_imprint">Mentions Légales</a>
-            </div>
-            <div class="footer-col">
-                <h4 data-key="footer_social">Suivez-nous</h4>
-                <div class="social-icons">
-                    <a href="#">FB</a> <a href="#">IG</a> <a href="#">TW</a>
-                </div>
-            </div>
-        </div>
-        <div class="copyright" data-key="footer_copyright">
-            &copy; 2025 Neon Nexus. Tous droits réservés.
-        </div>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- TRANSLATION DATA ---
-            const langData = {
-                fr: {
-                    nav_home: "Accueil", nav_fame: "Wall of Fame", nav_events: "Événements", nav_records: "Records", nav_venues: "Lieux", nav_contact: "Contact",
-                    home_tag: "Bienvenue", home_title: `"La musique est le langage de l'âme"`, home_subtitle: "- Les Légendes de la Musique",
-                    fame_tag: "Légendes", fame_title: "Wall of Fame", fame_subtitle: "Découvrez les artistes légendaires qui ont marqué l'histoire de la musique",
-                    events_tag: "Prochainement", events_title: "Événements à venir", events_subtitle: "Réservez vos places pour les concerts les plus attendus de l'année",
-                    event_new: "Nouveau", event_tickets_cat: "Catégories de billets", event_reserve_btn: "Réserver maintenant",
-                    records_tag: "Succès", records_title: "Records & Réalisations", records_subtitle: "Les chiffres extraordinaires de nos artistes et événements",
-                    record1_title: "Plus de 500 Récompenses", record1_desc: "Décernées à nos artistes légendaires",
-                    record2_title: "2 Milliards de Streams", record2_desc: "Records de streaming en 2024",
-                    record3_title: "1000+ Concerts", record3_desc: "Organisés dans le monde entier",
-                    record4_title: "50+ Pays", record4_desc: "Tournées internationales réalisées",
-                    venues_tag: "Lieux Prestigieux", venues_title: "Lieux en France", venues_subtitle: "Les plus prestigieuses salles de concert en France",
-                    gallery_fame_title: "Galerie des Légendes", gallery_events_title: "Photos des Événements Précédents", gallery_venues_title: "Galerie des Lieux",
-                    contact_tag: "Contactez-nous", contact_title: "Restez Connecté", contact_subtitle: "Une question ? Besoin d'informations ? Notre équipe est là pour vous",
-                    form_name: "Votre nom", form_email: "Votre email", form_message: "Votre message", form_button: "Envoyer le message",
-                    contact_email_title: "Email", contact_phone_title: "Téléphone", contact_address_title: "Adresse",
-                    footer_desc: "Le coeur des événements musicaux du monde", footer_nav: "Navigation", footer_legal: "Légal", footer_terms: "Conditions Générales", footer_privacy: "Politique de Confidentialité", footer_imprint: "Mentions Légales", footer_social: "Suivez-nous", footer_copyright: "© 2025 Neon Nexus. Tous droits réservés."
-                },
-                en: {
-                    nav_home: "Home", nav_fame: "Wall of Fame", nav_events: "Events", nav_records: "Records", nav_venues: "Venues", nav_contact: "Contact",
-                    home_tag: "Welcome", home_title: `"Music is the language of the soul"`, home_subtitle: "- The Legends of Music",
-                    fame_tag: "Legends", fame_title: "Wall of Fame", fame_subtitle: "Discover the legendary artists who have marked the history of music",
-                    events_tag: "Upcoming", events_title: "Upcoming Events", events_subtitle: "Book your spots for the most anticipated concerts of the year",
-                    event_new: "New", event_tickets_cat: "Ticket Categories", event_reserve_btn: "Reserve Now",
-                    records_tag: "Success", records_title: "Records & Achievements", records_subtitle: "The extraordinary numbers of our artists and events",
-                    record1_title: "Over 500 Awards", record1_desc: "Awarded to our legendary artists",
-                    record2_title: "2 Billion Streams", record2_desc: "Streaming records in 2024",
-                    record3_title: "1000+ Concerts", record3_desc: "Organized worldwide",
-                    record4_title: "50+ Countries", record4_desc: "International tours completed",
-                    venues_tag: "Prestigious Venues", venues_title: "Venues in France", venues_subtitle: "The most prestigious concert halls in France",
-                    gallery_fame_title: "Gallery of Legends", gallery_events_title: "Past Event Photos", gallery_venues_title: "Venue Gallery",
-                    contact_tag: "Contact Us", contact_title: "Stay Connected", contact_subtitle: "A question? Need information? Our team is here for you",
-                    form_name: "Your Name", form_email: "Your Email", form_message: "Your Message", form_button: "Send Message",
-                    contact_email_title: "Email", contact_phone_title: "Phone", contact_address_title: "Address",
-                    footer_desc: "The heart of the world's music events", footer_nav: "Navigation", footer_legal: "Legal", footer_terms: "Terms & Conditions", footer_privacy: "Privacy Policy", footer_imprint: "Legal Notice", footer_social: "Follow Us", footer_copyright: "© 2025 Neon Nexus. All rights reserved."
-                }
-            };
+            // --- DATA & STATE MANAGEMENT ---
+            const { jsPDF } = window.jspdf; 
+            let currentEvent = null; 
 
-            // --- LANGUAGE TOGGLE LOGIC ---
-            const langToggle = document.getElementById('lang-toggle');
-            let currentLang = 'fr';
+            const mainPageContent = document.getElementById('main-page-content');
+            const bookingPage = document.getElementById('booking-page');
+            const backButton = document.getElementById('back-to-main');
+            
+            const langData = { /* ... your translation object ... */ };
+            
+            // --- SINGLE SOURCE OF TRUTH FOR DATA ---
+            // UPDATED ARTIST LIST
+            const fameArtists = [
+                { name: 'Patrick Bruel', genre: 'Variété française', img: 'french1.jpg' },
+                { name: 'Julien Clerc', genre: 'Variété française', img: 'french2.jpg' },
+                { name: 'Laurent Voulzy', genre: 'Pop/Rock', img: 'french3.webp' },
+                { name: 'Nolwenn Leroy', genre: 'Pop/Folk', img: 'french4.jpeg' },
+                { name: 'Raphael', genre: 'Nouvelle scène française', img: 'french5.jpg' },
+                { name: 'Olivia Ruiz', genre: 'Nouvelle scène française', img: 'french6.jpg' },
+                { name: 'Benjamin Biolay', genre: 'Chanson française', img: 'french7.jpg' },
+                { name: 'Camille', genre: 'Nouvelle scène française', img: 'french8.jpg' },
+                { name: 'M. Pokora', genre: 'Pop/R&B', img: 'french9.jpeg' },
+                { name: 'Louane', genre: 'Pop', img: 'french10.jpeg' },
+                { name: 'Taylor Swift', genre: 'Pop/Country', img: 'french11.webp' },
+                { name: 'Kungs', genre: 'Electronic/House', img: 'french12.png' },
+                { name: 'Amir Haddad', genre: 'Pop', img: 'french13.jpeg' },
+                { name: 'Diljit Dosanjh', genre: 'Punjabi/Pop', img: 'french14.webp' },
+                { name: 'Shawn Mendes', genre: 'Pop', img: 'french15.webp' },
+                { name: 'NFAK', genre: 'Qawwali', img: 'french16.jpeg' }
+            ];
 
-            function setLanguage(lang) {
-                document.documentElement.lang = lang;
-                const elements = document.querySelectorAll('[data-key]');
-                elements.forEach(el => {
-                    const key = el.getAttribute('data-key');
-                    const translation = langData[lang][key];
-                    if (translation) {
-                        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                            el.placeholder = translation;
-                        } else {
-                            el.textContent = translation;
-                        }
-                    }
-                });
+            const events = [
+                { id: 0, name: 'La Nuit Fleurie', date: '30 Octobre 2025', venue: 'Paris, France', img: 'arena.jpg', bookingImage: 'arena2.jpg', description: "Le 31 mars 2023, Jisoo de BLACKPINK a fait ses débuts en solo avec son single album 'Me', qui fut historique...", tickets: ['Platinum 299€', 'Gold 199€', 'Silver 99€'] },
+                { id: 1, name: 'Mélodie d’Indila', date: '15 Novembre 2025', venue: 'Ville, Paris, France', img: 'arena1.jpg', bookingImage: 'arena3.webp', description: "Indila a remporté le MTV Europe Music Award du Meilleur Artiste Français de 2014...", tickets: ['Platinum 349€', 'Gold 249€', 'Silver 129€'] },
+                { id: 2, name: 'The Neon Kings - Festival Tour', date: '12 Juin 2025', venue: 'Olympia, Paris', img: 'jazz.webp', bookingImage: 'https://via.placeholder.com/800x400.png?text=Neon+Kings+Live', description: 'The Neon Kings sont de retour ! Préparez-vous à une explosion de rock et d’énergie...', tickets: ['Platinum 259€', 'Gold 179€', 'Silver 89€'] }
+            ];
+
+            // --- PAGE VIEW SWITCHING FUNCTIONS ---
+            function showBookingPage(eventId) {
+                currentEvent = events.find(event => event.id === eventId);
+                if (!currentEvent) return;
+                document.getElementById('event-image').src = currentEvent.bookingImage;
+                document.getElementById('event-title').textContent = currentEvent.name;
+                document.getElementById('event-description').textContent = currentEvent.description;
+                document.getElementById('ticket-form').reset();
+                mainPageContent.classList.add('hidden');
+                bookingPage.classList.remove('hidden');
+                window.scrollTo(0, 0);
             }
 
-            langToggle.addEventListener('click', () => {
-                currentLang = (currentLang === 'fr') ? 'en' : 'fr';
-                langToggle.textContent = (currentLang === 'fr') ? 'EN' : 'FR';
-                setLanguage(currentLang);
-            });
+            function showMainPage() {
+                mainPageContent.classList.remove('hidden');
+                bookingPage.classList.add('hidden');
+                currentEvent = null;
+            }
 
-            // --- To avoid repeating HTML, generate content with JS ---
-            // You can easily add more items here
-            const fameArtists = [
-                { name: 'Luna Stellar', genre: 'Pop/Rock', img: 'luna.jpg' },
-                { name: 'Aurora Vox', genre: 'Pop', img: 'https://via.placeholder.com/300x300.png?text=Aurora+Vox' },
-                { name: 'The Neon Kings', genre: 'Rock', img: 'https://via.placeholder.com/300x300.png?text=The+Neon+Kings' },
-                { name: 'DJ Prism', genre: 'Electronic/EDM', img: 'https://via.placeholder.com/300x300.png?text=DJ+Prism' }
-            ];
-            
-            const events = [
-                { name: 'Luna Stellar - Tournée Mondiale 2025', date: '15 Mars 2025', venue: 'Accor Arena, Paris', img: 'arena.jpg', tickets: ['Platinum 299€', 'Gold 199€', 'Silver 99€'] },
-                { name: 'Aurora Vox Live Experience', date: '28 Avril 2025', venue: 'Stade de France, Paris', img: 'arena1.jpg', tickets: ['Platinum 349€', 'Gold 249€', 'Silver 129€'] },
-                { name: 'The Neon Kings - Festival Tour', date: '12 Juin 2025', venue: 'Olympia, Paris', img: 'jazz.webp', tickets: ['Platinum 259€', 'Gold 179€', 'Silver 89€'] }
-            ];
+            // --- CONTENT GENERATION ---
 
+            // ** NEW LOGIC FOR WALL OF FAME **
             const fameContainer = document.querySelector('#wall-of-fame .card-grid');
-            fameArtists.forEach(artist => {
-                fameContainer.innerHTML += `
-                    <div class="fame-card card">
-                        <img src="${artist.img}" alt="${artist.name}">
-                        <h3>${artist.name}</h3><p>${artist.genre}</p>
-                    </div>`;
+            const showMoreBtn = document.getElementById('show-more-artists');
+
+            // Function to render a list of artists
+            const renderArtists = (artistList) => {
+                artistList.forEach(artist => {
+                    fameContainer.innerHTML += `<div class="fame-card card"><img src="${artist.img}" alt="${artist.name}"><h3>${artist.name}</h3><p>${artist.genre}</p></div>`;
+                });
+            };
+
+            // Initially render the first 6 artists
+            renderArtists(fameArtists.slice(0, 6));
+
+            // Add listener for the "Show More" button
+            showMoreBtn.addEventListener('click', () => {
+                // Render the next 10 artists (from index 6 to 16)
+                renderArtists(fameArtists.slice(6, 16));
+                // Hide the button after it's clicked
+                showMoreBtn.style.display = 'none';
             });
+
 
             const eventsContainer = document.querySelector('#evenements .card-grid');
             events.forEach(event => {
                 eventsContainer.innerHTML += `
                     <div class="event-card card">
-                        <div style="position:relative;"><img src="${event.img}" alt="${event.name}"><span class="tag-new" data-key="event_new">Nouveau</span></div>
+                        <div style="position:relative;"><img src="${event.img}" alt="${event.name}"><span class="tag-new">Nouveau</span></div>
                         <div class="card-content">
                             <h3>${event.name}</h3>
                             <div class="event-info"><span>${event.date}</span><span>${event.venue}</span></div>
-                            <p data-key="event_tickets_cat">Catégories de billets</p>
+                            <p>Catégories de billets</p>
                             <div class="ticket-categories">${event.tickets.map(t => `<span>${t}</span>`).join('')}</div>
-                            <button class="btn-reserve" data-key="event_reserve_btn">Réserver maintenant</button>
+                            <button class="btn-reserve" data-event-id="${event.id}">Réserver maintenant</button>
                         </div>
                     </div>`;
             });
+
+            // --- EVENT LISTENERS ---
+            mainPageContent.addEventListener('click', (e) => {
+                if (e.target.matches('.btn-reserve') && e.target.hasAttribute('data-event-id')) {
+                    const eventId = parseInt(e.target.getAttribute('data-event-id'));
+                    showBookingPage(eventId);
+                }
+            });
+
+            backButton.addEventListener('click', showMainPage);
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showMainPage();
+                    const targetId = e.target.getAttribute('data-target');
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            document.getElementById('ticket-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (!currentEvent) return;
+
+                const userName = document.getElementById('name').value;
+                const userAge = document.getElementById('age').value;
+
+                if (!userName || !userAge) {
+                    alert('Veuillez remplir tous les champs.');
+                    return;
+                }
+
+                const doc = new jsPDF();
+                const ticketNumber = `NN-${Math.floor(100000 + Math.random() * 900000)}`;
+                
+                doc.setFontSize(22);
+                doc.text('Votre Billet NEON NEXUS', 105, 20, { align: 'center' });
+                doc.setFontSize(16);
+                doc.text(currentEvent.name, 105, 40, { align: 'center' });
+
+                const img = new Image();
+                img.src = currentEvent.bookingImage;
+                img.onload = () => {
+                    doc.addImage(img, 'JPEG', 15, 50, 180, 90);
+                    doc.setFontSize(12);
+                    doc.text(`Nom: ${userName}`, 15, 160);
+                    doc.text(`Âge: ${userAge}`, 15, 170);
+                    doc.text(`Date: ${currentEvent.date}`, 15, 180);
+                    doc.text(`Lieu: ${currentEvent.venue}`, 15, 190);
+                    doc.setFontSize(18);
+                    doc.text(`Numéro de Billet: ${ticketNumber}`, 15, 210);
+                    doc.save(`Billet-${currentEvent.name.replace(/\s+/g, '-')}.pdf`);
+                };
+            });
             
-            // --- Initial language set after content generation ---
-            setLanguage(currentLang);
         });
     </script>
 </body>
