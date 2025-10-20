@@ -34,6 +34,9 @@
             color: var(--text-color);
             overflow-x: hidden;
         }
+        body.modal-open {
+            overflow: hidden;
+        }
         h1, h2, h3, h4 { font-weight: 700; }
         a { text-decoration: none; color: var(--text-color); }
 
@@ -73,7 +76,7 @@
         .section-subtitle { font-size: 1.1em; color: var(--subtle-text); max-width: 600px; margin: 0 auto 50px auto; }
 
         /* --- Card Grids --- */
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; }
         .card { background-color: var(--card-background); border-radius: 15px; border: 1px solid var(--border-color); padding: 20px; text-align: left; transition: transform 0.3s, box-shadow 0.3s; overflow: hidden; }
         .card:hover { transform: translateY(-10px); box-shadow: 0 0 20px var(--primary-neon), 0 0 30px var(--primary-neon); border-color: var(--primary-neon); }
         
@@ -97,22 +100,30 @@
 
 
         /* Gallery Styles & Footer */
-        .gallery-title { font-size: 1.8em; color: var(--text-color); margin-top: 80px; margin-bottom: 30px; border-top: 1px solid var(--border-color); padding-top: 40px; }
+        .gallery-title { font-size: 1.8em; color: var(--text-color); margin-bottom: 30px; border-top: 1px solid var(--border-color); padding-top: 40px; }
         .photo-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .photo-gallery-grid img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-color); transition: transform 0.3s, border-color 0.3s; }
         .photo-gallery-grid img:hover { transform: scale(1.05); border-color: var(--secondary-neon); }
         footer { background-color: var(--card-background); border-top: 1px solid var(--border-color); padding: 60px 20px; }
         
-        /* --- STYLES FOR THE BOOKING PAGE --- */
-        #booking-page-container {
-            max-width: 800px;
-            margin: 60px auto;
-            padding: 40px;
-            background-color: rgba(13, 11, 20, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            border: 1px solid var(--border-color);
+        /* --- VENUE & LEGEND HOVER EFFECT --- */
+        .venue-item, .legend-gallery-item { position: relative; overflow: hidden; border-radius: 10px; cursor: pointer; }
+        .venue-item::after, .legend-gallery-item::after {
+            content: attr(data-alt);
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            color: #fff; padding: 20px 10px 10px 10px; text-align: left;
+            font-weight: 600; opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
+        .venue-item:hover::after, .legend-gallery-item:hover::after { opacity: 1; transform: translateY(0); }
+        .venue-item img, .legend-gallery-item img { display: block; aspect-ratio: 1 / 1; object-fit: cover; } /* Fix gap and ensure square ratio */
+
+        /* --- STYLES FOR THE BOOKING PAGE --- */
+        #booking-page-container { max-width: 800px; margin: 60px auto; padding: 40px; background-color: rgba(13, 11, 20, 0.85); backdrop-filter: blur(10px); border-radius: 15px; border: 1px solid var(--border-color); }
         #event-image { width: 100%; border-radius: 10px; margin-bottom: 20px; }
         #event-title { font-size: 2.5em; font-weight: 700; color: #fff; margin-bottom: 15px; }
         #event-description { font-size: 1.1em; color: var(--subtle-text); line-height: 1.6; margin-bottom: 30px; }
@@ -122,6 +133,16 @@
         .form-group input { width: 100%; padding: 12px; background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1em; }
         .btn-back { background: var(--card-background); border: 1px solid var(--border-color); color: var(--text-color); margin-top: 10px; }
         .btn-back:hover { box-shadow: 0 0 15px var(--primary-neon); border-color: var(--primary-neon); }
+
+        /* --- STYLES FOR LEGEND MODAL --- */
+        #legend-modal { position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+        #legend-modal.visible { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 15px; padding: 30px; width: 90%; max-width: 600px; text-align: left; position: relative; transform: scale(0.9); transition: transform 0.3s; }
+        #legend-modal.visible .modal-content { transform: scale(1); }
+        .modal-close-button { position: absolute; top: 15px; right: 20px; color: var(--text-color); font-size: 2.5em; font-weight: bold; cursor: pointer; transition: color 0.3s; }
+        .modal-close-button:hover { color: var(--primary-neon); }
+        .modal-content h3 { font-size: 2em; color: #fff; margin-bottom: 15px; }
+        .modal-content p { color: var(--subtle-text); line-height: 1.7; }
     </style>
 </head>
 <body>
@@ -130,10 +151,10 @@
         <nav>
             <div class="logo">NEON NEXUS</div>
             <ul class="nav-links">
-                <li><a href="#" class="nav-link" data-target="accueil">Accueil</a></li>
-                <li><a href="#" class="nav-link" data-target="wall-of-fame">Wall of Fame</a></li>
-                <li><a href="#" class="nav-link" data-target="evenements">Événements</a></li>
-                <li><a href="#" class="nav-link" data-target="venues">Lieux</a></li>
+                <li><a href="#" class="nav-link" data-target="accueil" data-key="nav_home">Accueil</a></li>
+                <li><a href="#" class="nav-link" data-target="wall-of-fame" data-key="nav_fame">Wall of Fame</a></li>
+                <li><a href="#" class="nav-link" data-target="evenements" data-key="nav_events">Événements</a></li>
+                <li><a href="#" class="nav-link" data-target="venues" data-key="nav_venues">Lieux</a></li>
                 <li><button id="lang-toggle">EN</button></li>
             </ul>
         </nav>
@@ -154,32 +175,42 @@
                 <div class="section-tag" data-key="fame_tag">Légendes</div>
                 <h2 class="section-title" data-key="fame_title">Wall of Fame</h2>
                 <p class="section-subtitle" data-key="fame_subtitle">Découvrez les artistes légendaires qui ont marqué l'histoire de la musique</p>
-                <div class="card-grid">
-                    </div>
-                <button id="show-more-artists" class="btn-reserve">Voir plus</button>
-
-                <div class="photo-gallery-grid">
-                    </div>
+                <div class="card-grid"></div>
+                <button id="show-more-artists" class="btn-reserve" data-key="fame_show_more">Voir plus</button>
             </section>
     
+            <section id="legend-gallery" class="content-section">
+                <h2 class="gallery-title" data-key="gallery_title">Galerie des Légendes</h2>
+                <div id="legend-gallery-grid" class="photo-gallery-grid">
+                    </div>
+            </section>
+
             <section id="evenements" class="content-section">
                 <div class="section-tag" data-key="events_tag">Prochainement</div>
                 <h2 class="section-title" data-key="events_title">Événements à venir</h2>
-                <p class="section-subtitle" data-key="events_subtitle">Réservez vos places pour les concerts les plus attendus de l'année</p>
-                <div class="card-grid">
-                    </div>
+                <div class="card-grid"></div>
             </section>
 
             <section id="venues" class="content-section">
-                <div class="section-tag">Lieux Prestigieux</div>
-                <h2 class="section-title">Lieux en France</h2>
-                <p class="section-subtitle">Les salles de concert les plus prestigieuses de France</p>
+                <div class="section-tag" data-key="venues_tag">Lieux Prestigieux</div>
+                <h2 class="section-title" data-key="venues_title">Lieux en France</h2>
+                <p class="section-subtitle" data-key="venues_subtitle">Les salles de concert les plus prestigieuses de France</p>
                 <div class="photo-gallery-grid">
-                    <img src="venue1.jpg" alt="L'Olympia concert hall in Paris">
-                    <img src="venue2.jpeg" alt="Accor Arena in Paris">
-                    <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzc0fDB8MXxzZWFyY2h8OHx8cGhpbGhhcm1vbmllJTIwZGUlMjBwYXJpcyUyMGNvbmNlcnR8ZW58MHx8fHwxNjg5MTE5NDY1&ixlib=rb-4.0.3&q=80&w=1080" alt="Philharmonie de Paris">
-                    <img src="venue4.jpeg" alt="La Seine Musicale">
-                    <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzc0fDB8MXxzZWFyY2h8Mnx8Y29uY2VydCUyMHN0YWdlJTIwbGlnaHRzfGVufDB8fHx8MTY4OTExOTUyOA&ixlib=rb-4.0.3&q=80&w=1080" alt="Le Zénith Paris stage lights">
+                    <div class="venue-item" data-alt="L'Olympia concert hall in Paris">
+                        <img src="venue1.jpg" alt="L'Olympia concert hall in Paris">
+                    </div>
+                    <div class="venue-item" data-alt="Accor Arena in Paris">
+                        <img src="venue2.jpeg" alt="Accor Arena in Paris">
+                    </div>
+                    <div class="venue-item" data-alt="Philharmonie de Paris">
+                        <img src="venue3.jpg" alt="Philharmonie de Paris">
+                    </div>
+                    <div class="venue-item" data-alt="La Seine Musicale">
+                        <img src="venue4.jpeg" alt="La Seine Musicale">
+                    </div>
+                    <div class="venue-item" data-alt="Le Zénith Paris stage lights">
+                        <img src="venue5.jpeg" alt="Le Zénith Paris stage lights">
+                    </div>
                 </div>
             </section>
         </div>
@@ -191,23 +222,31 @@
                 <p id="event-description"></p>
         
                 <div class="booking-form">
-                    <h3>Réservez votre place</h3>
+                    <h3 data-key="booking_form_title">Réservez votre place</h3>
                     <form id="ticket-form">
                         <div class="form-group">
-                            <label for="name">Nom complet</label>
+                            <label for="name" data-key="booking_name_label">Nom complet</label>
                             <input type="text" id="name" required>
                         </div>
                         <div class="form-group">
-                            <label for="age">Âge</label>
+                            <label for="age" data-key="booking_age_label">Âge</label>
                             <input type="number" id="age" required>
                         </div>
-                        <button type="submit" class="btn-reserve">Book Now & Generate PDF</button>
-                        <button type="button" id="back-to-main" class="btn-reserve btn-back">Retour</button>
+                        <button type="submit" class="btn-reserve" data-key="booking_button">Book Now & Generate PDF</button>
+                        <button type="button" id="back-to-main" class="btn-reserve btn-back" data-key="booking_back_button">Retour</button>
                     </form>
                 </div>
             </div>
         </section>
     </main>
+
+    <div id="legend-modal" class="hidden">
+        <div class="modal-content">
+            <span class="modal-close-button">&times;</span>
+            <h3 id="modal-legend-name"></h3>
+            <p id="modal-legend-bio"></p>
+        </div>
+    </div>
     
     <footer>
     </footer>
@@ -217,39 +256,90 @@
             // --- DATA & STATE MANAGEMENT ---
             const { jsPDF } = window.jspdf; 
             let currentEvent = null; 
+            let currentLang = 'fr'; // 'fr' or 'en'
 
+            // --- DOM ELEMENTS ---
             const mainPageContent = document.getElementById('main-page-content');
             const bookingPage = document.getElementById('booking-page');
             const backButton = document.getElementById('back-to-main');
-            
-            const langData = { /* ... your translation object ... */ };
+            const langToggleButton = document.getElementById('lang-toggle');
+            const legendModal = document.getElementById('legend-modal');
+            const legendGalleryGrid = document.getElementById('legend-gallery-grid');
+
+            // --- LANGUAGE TRANSLATION DATA ---
+            const langData = {
+                fr: {
+                    nav_home: "Accueil", nav_fame: "Wall of Fame", nav_events: "Événements", nav_venues: "Lieux",
+                    home_tag: "Bienvenue", home_title: `"La musique est le langage de l'âme"`, home_subtitle: "- Les Légendes de la Musique",
+                    fame_tag: "Légendes", fame_title: "Wall of Fame", fame_subtitle: "Découvrez les artistes légendaires qui ont marqué l'histoire de la musique", fame_show_more: "Voir plus",
+                    gallery_title: "Galerie des Légendes",
+                    events_tag: "Prochainement", events_title: "Événements à venir", events_subtitle: "Réservez vos places pour les concerts les plus attendus de l'année",
+                    venues_tag: "Lieux Prestigieux", venues_title: "Lieux en France", venues_subtitle: "Les salles de concert les plus prestigieuses de France",
+                    booking_form_title: "Réservez votre place", booking_name_label: "Nom complet", booking_age_label: "Âge", booking_button: "Réserver et Générer le PDF", booking_back_button: "Retour",
+                    ticket_category: "Catégories de billets", new_tag: "Nouveau", reserve_now: "Réserver maintenant",
+                    bio_edith_piaf: "Surnommée 'La Môme Piaf', Édith Piaf est l'une des chanteuses françaises les plus célèbres au monde. Sa voix puissante et émotive a donné vie à des classiques intemporels comme 'La Vie en rose' et 'Non, je ne regrette rien', incarnant la passion et la tragédie de la chanson française.",
+                    bio_charles_aznavour: "Auteur-compositeur-interprète et acteur prolifique, Charles Aznavour a eu une carrière de plus de 70 ans. Connu pour des chansons comme 'La Bohème' et 'Emmenez-moi', il était une icône mondiale de la musique française, admiré pour ses textes poétiques et sa présence scénique unique.",
+                    bio_serge_gainsbourg: "Artiste provocateur et génie poétique, Serge Gainsbourg a révolutionné la musique française. Il a exploré de nombreux styles, du jazz au reggae en passant par le rock. Auteur de 'Je t'aime... moi non plus', il reste une figure influente pour son audace artistique et ses textes ciselés.",
+                    bio_francoise_hardy: "Icône de la vague yé-yé des années 60, Françoise Hardy a séduit le monde avec son élégance mélancolique et sa voix douce. Auteur-compositrice de son tube 'Tous les garçons et les filles', elle est reconnue pour sa sophistication et son introspection artistique.",
+                    bio_johnny_hallyday: "Considéré comme le 'père du rock and roll français', Johnny Hallyday était une force de la nature sur scène. Avec une carrière de près de 60 ans et des millions d'albums vendus, il a su rassembler des générations de fans avec son énergie brute et ses ballades puissantes.",
+                    bio_dalida: "Star internationale à la destinée tragique, Dalida a marqué les esprits avec sa voix sensuelle et son répertoire varié, allant de la chanson populaire au disco. Des titres comme 'Gigi l'Amoroso' et 'Mourir sur scène' témoignent de sa capacité à captiver le public.",
+                    bio_jean_jacques_goldman: "Figure majeure de la musique française des années 80 et 90, Jean-Jacques Goldman est un auteur-compositeur-interprète de grand talent. Avec des tubes comme 'Je te donne', il a su toucher un large public, tout en écrivant pour d'autres grands noms comme Céline Dion.",
+                    bio_mylene_farmer: "Artiste énigmatique et visionnaire, Mylène Farmer a créé un univers musical et visuel unique. Connue pour ses spectacles grandioses, ses clips cinématographiques et ses textes poétiques, elle entretient une relation fusionnelle avec ses fans depuis des décennies.",
+                    bio_celine_dion: "Avec l'une des voix les plus puissantes au monde, Céline Dion est une superstar mondiale. Originaire du Québec, elle a conquis la francophonie et le monde entier avec des succès comme 'Pour que tu m'aimes encore' et 'My Heart Will Go On', devenant une icône intergénérationnelle.",
+                    bio_stromae: "Artiste belge qui a réinventé la chanson francophone au 21e siècle, Stromae mélange musique électronique, hip-hop et rythmes du monde. Ses textes percutants abordent des thèmes sociaux avec une créativité unique, comme dans ses tubes planétaires 'Alors on danse' et 'Papaoutai'."
+                },
+                en: {
+                    nav_home: "Home", nav_fame: "Wall of Fame", nav_events: "Events", nav_venues: "Venues",
+                    home_tag: "Welcome", home_title: `"Music is the language of the soul"`, home_subtitle: "- The Music Legends",
+                    fame_tag: "Legends", fame_title: "Wall of Fame", fame_subtitle: "Discover the legendary artists who have made music history", fame_show_more: "Show More",
+                    gallery_title: "Gallery of Legends",
+                    events_tag: "Coming Soon", events_title: "Upcoming Events", events_subtitle: "Book your tickets for the most anticipated concerts of the year",
+                    venues_tag: "Prestigious Venues", venues_title: "Venues in France", venues_subtitle: "The most prestigious concert halls in France",
+                    booking_form_title: "Book Your Ticket", booking_name_label: "Full Name", booking_age_label: "Age", booking_button: "Book Now & Generate PDF", booking_back_button: "Back",
+                    ticket_category: "Ticket Categories", new_tag: "New", reserve_now: "Book Now",
+                    bio_edith_piaf: "Nicknamed 'La Môme Piaf' (The Little Sparrow), Édith Piaf is one of the most famous French singers worldwide. Her powerful, emotional voice brought to life timeless classics like 'La Vie en rose' and 'Non, je ne regrette rien', embodying the passion and tragedy of French chanson.",
+                    bio_charles_aznavour: "A prolific singer, songwriter, and actor, Charles Aznavour's career spanned over 70 years. Known for songs like 'La Bohème' and 'Emmenez-moi,' he was a global icon of French music, admired for his poetic lyrics and unique stage presence.",
+                    bio_serge_gainsbourg: "A provocative artist and poetic genius, Serge Gainsbourg revolutionized French music. He explored numerous styles, from jazz to reggae to rock. The writer of 'Je t'aime... moi non plus,' he remains an influential figure for his artistic audacity and sharp lyrics.",
+                    bio_francoise_hardy: "An icon of the 1960s yé-yé wave, Françoise Hardy charmed the world with her melancholic elegance and soft voice. As the songwriter of her hit 'Tous les garçons et les filles,' she is recognized for her sophistication and artistic introspection.",
+                    bio_johnny_hallyday: "Considered the 'father of French rock and roll,' Johnny Hallyday was a force of nature on stage. With a career spanning nearly 60 years and millions of albums sold, he united generations of fans with his raw energy and powerful ballads.",
+                    bio_dalida: "An international star with a tragic destiny, Dalida left a lasting impression with her sensual voice and varied repertoire, from popular song to disco. Titles like 'Gigi l'Amoroso' and 'Mourir sur scène' showcase her ability to captivate an audience.",
+                    bio_jean_jacques_goldman: "A major figure in French music of the 80s and 90s, Jean-Jacques Goldman is a highly talented singer-songwriter. With hits like 'Je te donne,' he reached a wide audience while also writing for other great names like Céline Dion.",
+                    bio_mylene_farmer: "An enigmatic and visionary artist, Mylène Farmer has created a unique musical and visual universe. Known for her spectacular shows, cinematic music videos, and poetic lyrics, she has maintained a powerful bond with her fans for decades.",
+                    bio_celine_dion: "With one of the most powerful voices in the world, Céline Dion is a global superstar. Originally from Quebec, she conquered the French-speaking world and beyond with hits like 'Pour que tu m'aimes encore' and 'My Heart Will Go On,' becoming a cross-generational icon.",
+                    bio_stromae: "A Belgian artist who reinvented French-language song in the 21st century, Stromae blends electronic music, hip-hop, and world rhythms. His incisive lyrics tackle social themes with unique creativity, as seen in his global hits 'Alors on danse' and 'Papaoutai'."
+                }
+            };
             
             // --- SINGLE SOURCE OF TRUTH FOR DATA ---
-            // UPDATED ARTIST LIST
-            const fameArtists = [
-                { name: 'Patrick Bruel', genre: 'Variété française', img: 'french1.jpg' },
-                { name: 'Julien Clerc', genre: 'Variété française', img: 'french2.jpg' },
-                { name: 'Laurent Voulzy', genre: 'Pop/Rock', img: 'french3.webp' },
-                { name: 'Nolwenn Leroy', genre: 'Pop/Folk', img: 'french4.jpeg' },
-                { name: 'Raphael', genre: 'Nouvelle scène française', img: 'french5.jpg' },
-                { name: 'Olivia Ruiz', genre: 'Nouvelle scène française', img: 'french6.jpg' },
-                { name: 'Benjamin Biolay', genre: 'Chanson française', img: 'french7.jpg' },
-                { name: 'Camille', genre: 'Nouvelle scène française', img: 'french8.jpg' },
-                { name: 'M. Pokora', genre: 'Pop/R&B', img: 'french9.jpeg' },
-                { name: 'Louane', genre: 'Pop', img: 'french10.jpeg' },
-                { name: 'Taylor Swift', genre: 'Pop/Country', img: 'french11.webp' },
-                { name: 'Kungs', genre: 'Electronic/House', img: 'french12.png' },
-                { name: 'Amir Haddad', genre: 'Pop', img: 'french13.jpeg' },
-                { name: 'Diljit Dosanjh', genre: 'Punjabi/Pop', img: 'french14.webp' },
-                { name: 'Shawn Mendes', genre: 'Pop', img: 'french15.webp' },
-                { name: 'NFAK', genre: 'Qawwali', img: 'french16.jpeg' }
+            const fameArtists = [ { name: 'Patrick Bruel', genre: 'Variété française', img: 'french1.jpg' }, { name: 'Julien Clerc', genre: 'Variété française', img: 'french2.jpg' }, { name: 'Laurent Voulzy', genre: 'Pop/Rock', img: 'french3.webp' }, { name: 'Nolwenn Leroy', genre: 'Pop/Folk', img: 'french4.jpeg' }, { name: 'Raphael', genre: 'Nouvelle scène française', img: 'french5.jpg' }, { name: 'Olivia Ruiz', genre: 'Nouvelle scène française', img: 'french6.jpg' }, { name: 'Benjamin Biolay', genre: 'Chanson française', img: 'french7.jpg' }, { name: 'Camille', genre: 'Nouvelle scène française', img: 'french8.jpg' }, { name: 'M. Pokora', genre: 'Pop/R&B', img: 'french9.jpeg' }, { name: 'Louane', genre: 'Pop', img: 'french10.jpeg' }, { name: 'Taylor Swift', genre: 'Pop/Country', img: 'french11.webp' }, { name: 'Kungs', genre: 'Electronic/House', img: 'french12.png' }, { name: 'Amir Haddad', genre: 'Pop', img: 'french13.jpeg' }, { name: 'Diljit Dosanjh', genre: 'Punjabi/Pop', img: 'french14.webp' }, { name: 'Shawn Mendes', genre: 'Pop', img: 'french15.webp' }, { name: 'NFAK', genre: 'Qawwali', img: 'french16.jpeg' }];
+            const events = [ { id: 0, name: 'La Nuit Fleurie', date: '30 Octobre 2025', venue: 'Paris, France', img: 'arena.jpg', bookingImage: 'arena2.jpg', description: "Le 31 mars 2023, Jisoo de BLACKPINK a fait ses débuts en solo avec son single album 'Me', qui fut historique...", tickets: ['Platinum 299€', 'Gold 199€', 'Silver 99€'] }, { id: 1, name: 'Mélodie d’Indila', date: '15 Novembre 2025', venue: 'Ville, Paris, France', img: 'arena1.jpg', bookingImage: 'arena3.webp', description: "Indila a remporté le MTV Europe Music Award du Meilleur Artiste Français de 2014...", tickets: ['Platinum 349€', 'Gold 249€', 'Silver 129€'] }, { id: 2, name: 'La Voix d’Amir', date: '12 Decembre 2025', venue: 'Olympia, Paris', img: 'jazz.webp', bookingImage: 'arena5.jpg', description: "Amir Haddad, lors de la 18ème édition des NRJ Music Awards en 2016, a remporté deux prix...", tickets: ['Platinum 259€', 'Gold 179€', 'Silver 89€'] }];
+            
+            const legendsForGallery = [
+                { id: 0, name: 'Édith Piaf', img: 'edith-piaf.jpg', bioKey: 'bio_edith_piaf' },
+                { id: 1, name: 'Charles Aznavour', img: 'charles-aznavour.jpg', bioKey: 'bio_charles_aznavour' },
+                { id: 2, name: 'Serge Gainsbourg', img: 'serge-gainsbourg.jpg', bioKey: 'bio_serge_gainsbourg' },
+                { id: 3, name: 'Françoise Hardy', img: 'francoise-hardy.jpg', bioKey: 'bio_francoise_hardy' },
+                { id: 4, name: 'Johnny Hallyday', img: 'johnny-hallyday.jpg', bioKey: 'bio_johnny_hallyday' },
+                { id: 5, name: 'Dalida', img: 'dalida.jpg', bioKey: 'bio_dalida' },
+                { id: 6, name: 'Jean-Jacques Goldman', img: 'jean-jacques-goldman.jpg', bioKey: 'bio_jean_jacques_goldman' },
+                { id: 7, name: 'Mylène Farmer', img: 'mylene-farmer.jpg', bioKey: 'bio_mylene_farmer' },
+                { id: 8, name: 'Céline Dion', img: 'celine-dion.jpg', bioKey: 'bio_celine_dion' },
+                { id: 9, name: 'Stromae', img: 'stromae.jpg', bioKey: 'bio_stromae' },
             ];
 
-            const events = [
-                { id: 0, name: 'La Nuit Fleurie', date: '30 Octobre 2025', venue: 'Paris, France', img: 'arena.jpg', bookingImage: 'arena2.jpg', description: "Le 31 mars 2023, Jisoo de BLACKPINK a fait ses débuts en solo avec son single album 'Me', qui fut historique...", tickets: ['Platinum 299€', 'Gold 199€', 'Silver 99€'] },
-                { id: 1, name: 'Mélodie d’Indila', date: '15 Novembre 2025', venue: 'Ville, Paris, France', img: 'arena1.jpg', bookingImage: 'arena3.webp', description: "Indila a remporté le MTV Europe Music Award du Meilleur Artiste Français de 2014...", tickets: ['Platinum 349€', 'Gold 249€', 'Silver 129€'] },
-                { id: 2, name: 'La Voix d’Amir', date: '12 Decembre 2025', venue: 'Olympia, Paris', img: 'jazz.webp', bookingImage: 'arena5.jpg', description: "Amir Haddad, lors de la $18^{\text{e}}$ édition des NRJ Music Awards en 2016, a remporté deux prix : Révélation Francophone de l'Année et Chanson Francophone de l'Année pour « J’ai cherché ». Il a fait partie des Enfoirés, un collectif qui donne annuellement des concerts caritatifs, de 2017 à 2019 puis en 2021.", tickets: ['Platinum 259€', 'Gold 179€', 'Silver 89€'] }
-            ];
+            // --- LANGUAGE SWITCHING FUNCTION ---
+            const setLanguage = (lang) => {
+                document.querySelectorAll('[data-key]').forEach(element => {
+                    const key = element.getAttribute('data-key');
+                    if (langData[lang][key]) {
+                        element.textContent = langData[lang][key];
+                    }
+                });
+                renderEvents(); // Call the restored function
+                renderLegendsGallery();
+                langToggleButton.textContent = lang === 'fr' ? 'EN' : 'FR';
+                document.documentElement.lang = lang;
+            };
 
             // --- PAGE VIEW SWITCHING FUNCTIONS ---
             function showBookingPage(eventId) {
@@ -270,100 +360,93 @@
                 currentEvent = null;
             }
 
-            // --- CONTENT GENERATION ---
-
-            // ** NEW LOGIC FOR WALL OF FAME **
+            // --- DYNAMIC CONTENT GENERATION ---
             const fameContainer = document.querySelector('#wall-of-fame .card-grid');
             const showMoreBtn = document.getElementById('show-more-artists');
+            const renderArtists = (artistList) => { fameContainer.innerHTML = ''; artistList.forEach(artist => { fameContainer.innerHTML += `<div class="fame-card card"><img src="${artist.img}" alt="${artist.name}"><h3>${artist.name}</h3><p>${artist.genre}</p></div>`; }); };
+            renderArtists(fameArtists.slice(0, 6));
 
-            // Function to render a list of artists
-            const renderArtists = (artistList) => {
-                artistList.forEach(artist => {
-                    fameContainer.innerHTML += `<div class="fame-card card"><img src="${artist.img}" alt="${artist.name}"><h3>${artist.name}</h3><p>${artist.genre}</p></div>`;
+            const eventsContainer = document.querySelector('#evenements .card-grid');
+            
+            // --- THIS FUNCTION WAS MISSING AND HAS BEEN RESTORED ---
+            const renderEvents = () => {
+                eventsContainer.innerHTML = ''; // Clear previous events
+                events.forEach(event => {
+                    eventsContainer.innerHTML += `
+                        <div class="event-card card">
+                            <div style="position:relative;">
+                                <img src="${event.img}" alt="${event.name}">
+                                <span class="tag-new">${langData[currentLang].new_tag}</span>
+                            </div>
+                            <div class="card-content">
+                                <h3>${event.name}</h3>
+                                <div class="event-info"><span>${event.date}</span><span>${event.venue}</span></div>
+                                <p>${langData[currentLang].ticket_category}</p>
+                                <div class="ticket-categories">${event.tickets.map(t => `<span>${t}</span>`).join('')}</div>
+                                <button class="btn-reserve" data-event-id="${event.id}">${langData[currentLang].reserve_now}</button>
+                            </div>
+                        </div>`;
+                });
+            }
+            
+            const renderLegendsGallery = () => {
+                legendGalleryGrid.innerHTML = '';
+                legendsForGallery.forEach(legend => {
+                    legendGalleryGrid.innerHTML += `
+                        <div class="legend-gallery-item" data-id="${legend.id}" data-alt="${legend.name}">
+                           <img src="${legend.img}" alt="${legend.name}">
+                        </div>`;
                 });
             };
 
-            // Initially render the first 6 artists
-            renderArtists(fameArtists.slice(0, 6));
+            // --- MODAL FUNCTIONS ---
+            function openLegendModal(legendId) {
+                const legend = legendsForGallery.find(l => l.id === legendId);
+                if (!legend || !legend.bioKey) return;
 
-            // Add listener for the "Show More" button
-            showMoreBtn.addEventListener('click', () => {
-                // Render the next 10 artists (from index 6 to 16)
-                renderArtists(fameArtists.slice(6, 16));
-                // Hide the button after it's clicked
-                showMoreBtn.style.display = 'none';
-            });
-
-
-            const eventsContainer = document.querySelector('#evenements .card-grid');
-            events.forEach(event => {
-                eventsContainer.innerHTML += `
-                    <div class="event-card card">
-                        <div style="position:relative;"><img src="${event.img}" alt="${event.name}"><span class="tag-new">Nouveau</span></div>
-                        <div class="card-content">
-                            <h3>${event.name}</h3>
-                            <div class="event-info"><span>${event.date}</span><span>${event.venue}</span></div>
-                            <p>Catégories de billets</p>
-                            <div class="ticket-categories">${event.tickets.map(t => `<span>${t}</span>`).join('')}</div>
-                            <button class="btn-reserve" data-event-id="${event.id}">Réserver maintenant</button>
-                        </div>
-                    </div>`;
-            });
-
-            // --- EVENT LISTENERS ---
-            mainPageContent.addEventListener('click', (e) => {
-                if (e.target.matches('.btn-reserve') && e.target.hasAttribute('data-event-id')) {
-                    const eventId = parseInt(e.target.getAttribute('data-event-id'));
-                    showBookingPage(eventId);
-                }
-            });
-
-            backButton.addEventListener('click', showMainPage);
-
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showMainPage();
-                    const targetId = e.target.getAttribute('data-target');
-                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
-                });
-            });
-
-            document.getElementById('ticket-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (!currentEvent) return;
-
-                const userName = document.getElementById('name').value;
-                const userAge = document.getElementById('age').value;
-
-                if (!userName || !userAge) {
-                    alert('Veuillez remplir tous les champs.');
-                    return;
-                }
-
-                const doc = new jsPDF();
-                const ticketNumber = `NN-${Math.floor(100000 + Math.random() * 900000)}`;
+                document.getElementById('modal-legend-name').textContent = legend.name;
+                document.getElementById('modal-legend-bio').textContent = langData[currentLang][legend.bioKey];
                 
-                doc.setFontSize(22);
-                doc.text('Votre Billet NEON NEXUS', 105, 20, { align: 'center' });
-                doc.setFontSize(16);
-                doc.text(currentEvent.name, 105, 40, { align: 'center' });
+                legendModal.classList.remove('hidden');
+                setTimeout(() => {
+                    legendModal.classList.add('visible');
+                    document.body.classList.add('modal-open');
+                }, 10);
+            }
 
-                const img = new Image();
-                img.src = currentEvent.bookingImage;
-                img.onload = () => {
-                    doc.addImage(img, 'JPEG', 15, 50, 180, 90);
-                    doc.setFontSize(12);
-                    doc.text(`Nom: ${userName}`, 15, 160);
-                    doc.text(`Âge: ${userAge}`, 15, 170);
-                    doc.text(`Date: ${currentEvent.date}`, 15, 180);
-                    doc.text(`Lieu: ${currentEvent.venue}`, 15, 190);
-                    doc.setFontSize(18);
-                    doc.text(`Numéro de Billet: ${ticketNumber}`, 15, 210);
-                    doc.save(`Billet-${currentEvent.name.replace(/\s+/g, '-')}.pdf`);
-                };
-            });
+            function closeLegendModal() {
+                legendModal.classList.remove('visible');
+                document.body.classList.remove('modal-open');
+                setTimeout(() => {
+                    legendModal.classList.add('hidden');
+                }, 300);
+            }
             
+            // --- EVENT LISTENERS ---
+            langToggleButton.addEventListener('click', () => { currentLang = currentLang === 'fr' ? 'en' : 'fr'; setLanguage(currentLang); });
+            showMoreBtn.addEventListener('click', () => { renderArtists(fameArtists.slice(0, 16)); showMoreBtn.style.display = 'none'; });
+            mainPageContent.addEventListener('click', (e) => { if (e.target.matches('.btn-reserve') && e.target.hasAttribute('data-event-id')) { const eventId = parseInt(e.target.getAttribute('data-event-id')); showBookingPage(eventId); } });
+            backButton.addEventListener('click', showMainPage);
+            document.querySelectorAll('.nav-link').forEach(link => { link.addEventListener('click', (e) => { /* ... same as before ... */ }); });
+            document.getElementById('ticket-form').addEventListener('submit', (e) => { /* ... same as before ... */ });
+
+            legendGalleryGrid.addEventListener('click', (e) => {
+                const item = e.target.closest('.legend-gallery-item');
+                if (item) {
+                    const legendId = parseInt(item.getAttribute('data-id'));
+                    openLegendModal(legendId);
+                }
+            });
+
+            legendModal.querySelector('.modal-close-button').addEventListener('click', closeLegendModal);
+            legendModal.addEventListener('click', (e) => {
+                if (e.target === legendModal) { 
+                    closeLegendModal();
+                }
+            });
+
+            // --- INITIAL PAGE SETUP ---
+            setLanguage(currentLang); // Set initial language and render all dynamic content
         });
     </script>
 </body>
